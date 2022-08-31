@@ -126,16 +126,6 @@ c10::intrusive_ptr<Work> barrier(
       BarrierOptions{device_ids, std::chrono::milliseconds(timeout)});
 }
 
-c10::intrusive_ptr<Work> recv_(
-    at::TensorList tensors,
-    const c10::intrusive_ptr<ProcessGroup>& process_group,
-    int64_t srcRank,
-    int64_t tag) {
-  auto tensor_vec = tensors.vec();
-  return process_group->recv(
-      tensor_vec, static_cast<int>(srcRank), static_cast<int>(tag));
-}
-
 TORCH_LIBRARY(c10d, m) {
   // The following ProcessGroup and Work definations are more like declarations.
   // They don't expose the details of the two classes into TorchScript.

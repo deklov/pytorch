@@ -1363,6 +1363,38 @@ class PythonProcessGroupExtensionTest(MultiProcessTestCase):
 
 instantiate_parametrized_tests(CommonDistributedDataParallelTest)
 
+class ProcessGroupWithDispatchedCollectivesTests(MultiProcessTestCase):
+    def setUp(self):
+        super(ProcessGroupWithDispatchedCollectivesTests, self).setUp()
+        self._spawn_processes()
+
+    def tearDown(self):
+        super(ProcessGroupWithDispatchedCollectivesTests, self).tearDown()
+        try:
+            os.remove(self.file_name)
+        except OSError:
+            pass
+
+    def _call_collective_with_varying_tensors(self, collective_func, *args):
+        # call collective with varying tensors to ensure that the tensors are
+        # correctly dispatched
+
+        # negative test to make sure a non-supported device fails during dispatch call
+        nonsupported_device = torch.device("meta")
+        tensor = torch.zeros(2, 2, device=nonsupported_device)
+        with self.assertRaisesRegex(NotImplementedError, "Could not run .* with arguments from the 'AutogradMeta' backend."):
+            collective_func(tensor, *args)
+
+    # TODO: backend will be replaced with a non specified backend
+    def _test_broadcast(self, backend):
+        store = dist.FileStore(self.file_name, self.world_size)
+        dist.init_process_group(
+            backend,
+            world_size=self.world_size,
+            rank=self.rank,
+            store=store,
+        )
+        self._call_collective_with_varying_tensors(dist.broadcast, self.rank)
 
 def wait_comm(comm_result):
     # This function is only used by tracing mode as a call_function node right

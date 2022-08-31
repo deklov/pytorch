@@ -2768,6 +2768,11 @@ class CompilerTest(test_c10d_common.CompilerTest):
         self._test_work_wait(torch.ones(2, 2, device=self.rank) * self.rank)
 
 
+class NcclProcessGroupWithDispatchedCollectivesTests(test_c10d_common.ProcessGroupWithDispatchedCollectivesTests):
+    @requires_nccl()
+    def test_broadcast(self):
+        self._test_broadcast(backend="nccl")
+
 if __name__ == "__main__":
     assert (
         not torch.cuda._initialized

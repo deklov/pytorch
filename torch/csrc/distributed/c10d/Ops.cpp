@@ -64,23 +64,6 @@ c10::intrusive_ptr<Work> reduce_scatter_(
           std::chrono::milliseconds(timeout)});
 }
 
-c10::intrusive_ptr<Work> reduce_(
-    at::TensorList tensors,
-    const c10::intrusive_ptr<ProcessGroup>& process_group,
-    int64_t reduce_op,
-    int64_t root_rank,
-    int64_t root_tensor,
-    int64_t timeout) {
-  auto tensor_vec = tensors.vec();
-  return process_group->reduce(
-      tensor_vec,
-      ReduceOptions{
-          static_cast<ReduceOp>(reduce_op),
-          root_rank,
-          root_tensor,
-          std::chrono::milliseconds(timeout)});
-}
-
 c10::intrusive_ptr<Work> gather_(
     const std::vector<std::vector<at::Tensor>>& output_tensors,
     const std::vector<at::Tensor>& input_tensors,
